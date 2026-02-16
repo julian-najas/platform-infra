@@ -1,5 +1,8 @@
 # platform-infra
 
+> **Public by design** — This repository is public for demo / portfolio purposes.
+> It contains **no secrets, credentials, or PHI**. Production configurations live in private infrastructure.
+
 Esqueleto de infraestructura como código para desplegar la plataforma clínica
 de reducción de no-shows.
 
