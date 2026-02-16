@@ -1,0 +1,49 @@
+# k8s/apps/workers/deployment.yaml
+# Deployment for action workers.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cacp-worker
+  labels:
+    app: cacp-worker
+    app.kubernetes.io/name: cacp-worker
+    app.kubernetes.io/part-of: clinical-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cacp-worker
+  template:
+    metadata:
+      labels:
+        app: cacp-worker
+    spec:
+      serviceAccountName: cacp-worker
+      containers:
+        - name: worker
+          image: ghcr.io/julian-najas/clinical-agentic-control-plane:latest
+          command: ["python", "-m", "cacp.workers.worker"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: database_url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: redis_url
+            - name: HMAC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: hmac_secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

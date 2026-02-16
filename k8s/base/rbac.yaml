@@ -1,0 +1,78 @@
+# k8s/base/rbac.yaml
+# RBAC — least-privilege access for platform components.
+
+# ServiceAccount for the control-plane API
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cacp-api
+  namespace: cacp-dev
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cacp-api
+  namespace: cacp-prod
+---
+# ServiceAccount for workers
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cacp-worker
+  namespace: cacp-dev
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cacp-worker
+  namespace: cacp-prod
+---
+# Role: API can read configmaps and secrets in its namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cacp-api-role
+  namespace: cacp-dev
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cacp-api-binding
+  namespace: cacp-dev
+subjects:
+  - kind: ServiceAccount
+    name: cacp-api
+    namespace: cacp-dev
+roleRef:
+  kind: Role
+  name: cacp-api-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Prod Role + Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cacp-api-role
+  namespace: cacp-prod
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cacp-api-binding
+  namespace: cacp-prod
+subjects:
+  - kind: ServiceAccount
+    name: cacp-api
+    namespace: cacp-prod
+roleRef:
+  kind: Role
+  name: cacp-api-role
+  apiGroup: rbac.authorization.k8s.io

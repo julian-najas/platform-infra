@@ -1,0 +1,36 @@
+# k8s/observability/prometheus-config.yaml
+# Prometheus scrape config para la plataforma clínica.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: "cacp-api"
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ["cacp-dev", "cacp-prod"]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: cacp-api
+            action: keep
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: environment
+
+      - job_name: "cacp-worker"
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ["cacp-dev", "cacp-prod"]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: cacp-worker
+            action: keep

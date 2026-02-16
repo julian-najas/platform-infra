@@ -1,0 +1,21 @@
+# .gitignore — platform-infra
+
+# Secrets reales (nunca commitear)
+**/secrets.yaml
+**/secrets.yml
+*.key
+*.pem
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform (si se usa en el futuro)
+.terraform/
+*.tfstate
+*.tfstate.backup

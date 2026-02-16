@@ -1,0 +1,57 @@
+# environments/prod/values.yaml
+# Valores de configuración para producción.
+
+environment: prod
+
+namespace: cacp-prod
+
+replicas:
+  api: 2
+  workers: 2
+
+image:
+  repository: ghcr.io/julian-najas/clinical-agentic-control-plane
+  tag: ""  # Set by ArgoCD from git tag
+  pullPolicy: IfNotPresent
+
+resources:
+  api:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  workers:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+postgres:
+  host: postgres.cacp-prod.svc.cluster.local
+  port: 5432
+  database: cacp
+  user: cacp
+
+redis:
+  host: redis.cacp-prod.svc.cluster.local
+  port: 6379
+  db: 0
+
+opa:
+  host: opa.cacp-prod.svc.cluster.local
+  port: 8181
+
+logging:
+  level: info
+  format: json
+
+automerge:
+  enabled: false  # Producción requiere aprobación humana
+
+feature_flags:
+  break_glass: true
+  ml_risk_scoring: false

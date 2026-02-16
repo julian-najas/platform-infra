@@ -1,0 +1,67 @@
+# k8s/apps/clinical-agentic-control-plane/deployment.yaml
+# Deployment for the CACP API.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cacp-api
+  labels:
+    app: cacp-api
+    app.kubernetes.io/name: cacp-api
+    app.kubernetes.io/part-of: clinical-platform
+spec:
+  replicas: 1  # Overridden by environment values
+  selector:
+    matchLabels:
+      app: cacp-api
+  template:
+    metadata:
+      labels:
+        app: cacp-api
+    spec:
+      serviceAccountName: cacp-api
+      containers:
+        - name: api
+          image: ghcr.io/julian-najas/clinical-agentic-control-plane:latest
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: database_url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: redis_url
+            - name: OPA_URL
+              value: "http://opa:8181"
+            - name: HMAC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cacp-secrets
+                  key: hmac_secret
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10

@@ -1,0 +1,53 @@
+# k8s/observability/alerts.yaml
+# PrometheusRule — alertas para la plataforma clínica.
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cacp-alerts
+  namespace: observability
+  labels:
+    app: cacp
+spec:
+  groups:
+    - name: cacp.rules
+      rules:
+        - alert: CACPApiDown
+          expr: up{job="cacp-api"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CACP API is down"
+            description: "The clinical-agentic-control-plane API has been unreachable for 2 minutes."
+
+        - alert: CACPHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job="cacp-api",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="cacp-api"}[5m]))
+            > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CACP API error rate > 5%"
+            description: "More than 5% of requests are returning 5xx errors."
+
+        - alert: CACPQueueBacklog
+          expr: cacp_queue_depth > 100
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Action queue backlog growing"
+            description: "Queue depth has exceeded 100 items for 10 minutes."
+
+        - alert: CACPOPAUnreachable
+          expr: cacp_opa_errors_total > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "OPA is unreachable — fail-closed active"
+            description: "The control plane cannot reach OPA. All requests are being denied (fail-closed)."

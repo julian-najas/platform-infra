@@ -1,0 +1,57 @@
+# environments/dev/values.yaml
+# Valores de configuración para el entorno de desarrollo.
+
+environment: dev
+
+namespace: cacp-dev
+
+replicas:
+  api: 1
+  workers: 1
+
+image:
+  repository: ghcr.io/julian-najas/clinical-agentic-control-plane
+  tag: latest
+  pullPolicy: Always
+
+resources:
+  api:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  workers:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+postgres:
+  host: postgres.cacp-dev.svc.cluster.local
+  port: 5432
+  database: cacp
+  user: cacp
+
+redis:
+  host: redis.cacp-dev.svc.cluster.local
+  port: 6379
+  db: 0
+
+opa:
+  host: opa.cacp-dev.svc.cluster.local
+  port: 8181
+
+logging:
+  level: debug
+  format: json
+
+automerge:
+  enabled: true  # PRs automáticos se auto-merge en dev
+
+feature_flags:
+  break_glass: true
+  ml_risk_scoring: false  # Phase 3 — deshabilitado

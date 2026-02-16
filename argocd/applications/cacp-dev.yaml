@@ -1,0 +1,26 @@
+# argocd/applications/cacp-dev.yaml
+# ArgoCD Application — despliega el control plane en dev.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cacp-dev
+  namespace: argocd
+spec:
+  project: clinical-platform
+
+  source:
+    repoURL: https://github.com/julian-najas/platform-infra.git
+    targetRevision: main
+    path: k8s/apps/clinical-agentic-control-plane
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cacp-dev
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

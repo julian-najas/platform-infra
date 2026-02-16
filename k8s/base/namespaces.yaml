@@ -1,0 +1,26 @@
+# k8s/base/namespaces.yaml
+# Namespaces para la plataforma clínica.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cacp-dev
+  labels:
+    app.kubernetes.io/part-of: clinical-platform
+    environment: dev
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cacp-prod
+  labels:
+    app.kubernetes.io/part-of: clinical-platform
+    environment: prod
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    app.kubernetes.io/part-of: clinical-platform
+    purpose: monitoring

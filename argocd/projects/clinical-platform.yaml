@@ -1,0 +1,38 @@
+# argocd/projects/clinical-platform.yaml
+# ArgoCD AppProject — agrupa todas las aplicaciones de la plataforma clínica.
+
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: clinical-platform
+  namespace: argocd
+spec:
+  description: "Plataforma clínica de reducción de no-shows"
+
+  sourceRepos:
+    - "https://github.com/julian-najas/platform-infra.git"
+    - "https://github.com/julian-najas/clinic-gitops-config.git"
+
+  destinations:
+    - namespace: cacp-dev
+      server: https://kubernetes.default.svc
+    - namespace: cacp-prod
+      server: https://kubernetes.default.svc
+    - namespace: observability
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding

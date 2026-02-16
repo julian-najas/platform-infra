@@ -1,0 +1,26 @@
+# argocd/applications/cacp-prod.yaml
+# ArgoCD Application — despliega el control plane en prod.
+# Sync manual — requiere aprobación explícita.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cacp-prod
+  namespace: argocd
+spec:
+  project: clinical-platform
+
+  source:
+    repoURL: https://github.com/julian-najas/platform-infra.git
+    targetRevision: main
+    path: k8s/apps/clinical-agentic-control-plane
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cacp-prod
+
+  syncPolicy:
+    # NO automated sync — producción requiere sync manual
+    syncOptions:
+      - CreateNamespace=false
+      - PruneLast=true
