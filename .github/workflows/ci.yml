@@ -1,0 +1,72 @@
+# CI — platform-infra
+# Validates K8s manifests, kustomize builds, and YAML structure.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  kustomize-build:
+    name: Kustomize Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        run: |
+          curl -sL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.1/kustomize_v5.4.1_linux_amd64.tar.gz | tar xz
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Build base
+        run: kustomize build k8s/base
+
+      - name: Build apps (control-plane)
+        run: kustomize build k8s/apps/clinical-agentic-control-plane
+
+      - name: Build apps (workers)
+        run: kustomize build k8s/apps/workers
+
+      - name: Build observability
+        run: kustomize build k8s/observability
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint K8s manifests
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: {max: 200}, truthy: disable}}" \
+            k8s/ argocd/ environments/
+
+  validate-argocd:
+    name: Validate ArgoCD Apps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate ArgoCD application manifests (YAML structure)
+        run: |
+          for f in argocd/applications/*.yaml argocd/projects/*.yaml; do
+            echo "Checking $f ..."
+            python3 -c "
+          import yaml, sys
+          with open('$f') as fh:
+              doc = yaml.safe_load(fh)
+          kind = doc.get('kind', '')
+          if kind not in ('Application', 'AppProject'):
+              print(f'WARN: {\"$f\"} kind={kind}')
+          print(f'OK: {\"$f\"} kind={kind}')
+          "
+          done

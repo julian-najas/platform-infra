@@ -1,0 +1,19 @@
+# platform-infra — CODEOWNERS
+# All changes require review. Infra is security-sensitive.
+
+* @julian-najas
+
+# ArgoCD applications and projects
+argocd/          @julian-najas
+
+# K8s manifests
+k8s/             @julian-najas
+
+# Observability (alerts, prometheus config)
+k8s/observability/ @julian-najas
+
+# Environment values and secrets
+environments/    @julian-najas
+
+# CI self-protection
+.github/         @julian-najas
