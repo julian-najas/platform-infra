@@ -27,7 +27,13 @@ spec:
 
   namespaceResourceWhitelist:
     - group: ""
-      kind: "*"
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ServiceAccount
     - group: apps
       kind: Deployment
     - group: apps
@@ -36,3 +42,5 @@ spec:
       kind: Role
     - group: rbac.authorization.k8s.io
       kind: RoleBinding
+    - group: networking.k8s.io
+      kind: NetworkPolicy

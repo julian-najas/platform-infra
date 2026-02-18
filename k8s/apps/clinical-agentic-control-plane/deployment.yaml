@@ -20,31 +20,46 @@ spec:
         app: cacp-api
     spec:
       serviceAccountName: cacp-api
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api
           image: ghcr.io/julian-najas/clinical-agentic-control-plane:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           ports:
             - containerPort: 8000
               protocol: TCP
           env:
-            - name: DATABASE_URL
+            - name: CACP_PG_DSN
               valueFrom:
                 secretKeyRef:
                   name: cacp-secrets
-                  key: database_url
-            - name: REDIS_URL
+                  key: pg_dsn
+            - name: CACP_REDIS_URL
               valueFrom:
                 secretKeyRef:
                   name: cacp-secrets
                   key: redis_url
-            - name: OPA_URL
+            - name: CACP_OPA_URL
               value: "http://opa:8181"
-            - name: HMAC_SECRET
+            - name: CACP_HMAC_SECRET
               valueFrom:
                 secretKeyRef:
                   name: cacp-secrets
                   key: hmac_secret
-            - name: LOG_LEVEL
+            - name: CACP_ENVIRONMENT
+              value: "production"
+            - name: CACP_LOG_LEVEL
               value: "info"
           resources:
             requests:
@@ -61,7 +76,7 @@ spec:
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 10

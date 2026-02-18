@@ -1,0 +1,184 @@
+# k8s/base/network-policies.yaml
+# NetworkPolicies — deny-all default + explicit allow per component.
+
+# ── Default deny-all (dev) ───────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: cacp-dev
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# ── Default deny-all (prod) ─────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: cacp-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# ── API: allow inbound from ingress + Prometheus ────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-api-ingress
+  namespace: cacp-dev
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: 8000
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-api-ingress
+  namespace: cacp-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - port: 8000
+          protocol: TCP
+---
+# ── API: allow egress to PostgreSQL, Redis, OPA, DNS ────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-api-egress
+  namespace: cacp-dev
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-api
+  policyTypes:
+    - Egress
+  egress:
+    # PostgreSQL
+    - ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - ports:
+        - port: 6379
+          protocol: TCP
+    # OPA
+    - ports:
+        - port: 8181
+          protocol: TCP
+    # DNS (kube-dns)
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # GitHub API (webhooks, PR creation) — HTTPS
+    - ports:
+        - port: 443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-api-egress
+  namespace: cacp-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-api
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 5432
+          protocol: TCP
+    - ports:
+        - port: 6379
+          protocol: TCP
+    - ports:
+        - port: 8181
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - ports:
+        - port: 443
+          protocol: TCP
+---
+# ── Worker: allow egress to PostgreSQL, Redis, DNS ──────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-worker-egress
+  namespace: cacp-dev
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-worker
+  policyTypes:
+    - Egress
+  egress:
+    # PostgreSQL
+    - ports:
+        - port: 5432
+          protocol: TCP
+    # Redis
+    - ports:
+        - port: 6379
+          protocol: TCP
+    # DNS
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Twilio API — HTTPS
+    - ports:
+        - port: 443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cacp-worker-egress
+  namespace: cacp-prod
+spec:
+  podSelector:
+    matchLabels:
+      app: cacp-worker
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 5432
+          protocol: TCP
+    - ports:
+        - port: 6379
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - ports:
+        - port: 443
+          protocol: TCP

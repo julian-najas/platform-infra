@@ -1,0 +1,92 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cacp-dev
+
+resources:
+  - ../../base
+  - ../../apps/clinical-agentic-control-plane
+  - ../../apps/workers
+
+images:
+  - name: ghcr.io/julian-najas/clinical-agentic-control-plane
+    newTag: latest          # dev tracks HEAD; override via CI
+
+patches:
+  # ── Dev: single replica, lower resources ────────────────
+  - target:
+      kind: Deployment
+      name: cacp-api
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 512Mi
+
+  - target:
+      kind: Deployment
+      name: cacp-worker
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 50m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 128Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 256Mi
+
+  # ── Dev environment variables ───────────────────────────
+  - target:
+      kind: Deployment
+      name: cacp-api
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cacp-api
+      spec:
+        template:
+          spec:
+            containers:
+              - name: api
+                env:
+                  - name: CACP_ENVIRONMENT
+                    value: "development"
+                  - name: CACP_LOG_LEVEL
+                    value: "debug"
+
+  - target:
+      kind: Deployment
+      name: cacp-worker
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cacp-worker
+      spec:
+        template:
+          spec:
+            containers:
+              - name: worker
+                env:
+                  - name: CACP_ENVIRONMENT
+                    value: "development"

@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: cacp-prod
+
+resources:
+  - ../../base
+  - ../../apps/clinical-agentic-control-plane
+  - ../../apps/workers
+
+images:
+  - name: ghcr.io/julian-najas/clinical-agentic-control-plane
+    newTag: "${IMAGE_TAG}"  # Set by ArgoCD / CI from git tag — NEVER :latest
+
+patches:
+  # ── Prod: HA replicas, full resources ───────────────────
+  - target:
+      kind: Deployment
+      name: cacp-api
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2
+
+  - target:
+      kind: Deployment
+      name: cacp-worker
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2

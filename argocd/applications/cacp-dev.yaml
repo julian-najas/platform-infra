@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://github.com/julian-najas/platform-infra.git
     targetRevision: main
-    path: k8s/apps/clinical-agentic-control-plane
+    path: k8s/overlays/dev
 
   destination:
     server: https://kubernetes.default.svc
